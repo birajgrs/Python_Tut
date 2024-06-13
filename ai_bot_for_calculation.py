@@ -9,14 +9,14 @@ def load_brain():
     except FileNotFoundError:
         # Initial brain data
         initial_brain = {
-            "add": "addition",
-            "addition": "addition",
-            "subtract": "subtraction",
-            "subtraction": "subtraction",
-            "multiply": "multiplication",
-            "multiplication": "multiplication",
-            "divide": "division",
-            "division": "division"
+            "add": ["addition"],
+            "addition": ["addition"],
+            "subtract": ["subtraction"],
+            "subtraction": ["subtraction"],
+            "multiply": ["multiplication"],
+            "multiplication": ["multiplication"],
+            "divide": ["division"],
+            "division": ["division"]
         }
         return initial_brain
 
@@ -29,9 +29,9 @@ def extract_numbers_and_operation(statement, brain):
     numbers = list(map(int, re.findall(r'\b\d+\b', statement)))
     operation = None
 
-    for term in brain:
-        if term in statement:
-            operation = brain[term]
+    for term, synonyms in brain.items():
+        if any(synonym in statement for synonym in synonyms):
+            operation = term
             break
 
     return numbers, operation
@@ -58,7 +58,7 @@ def ai_bot():
     brain = load_brain()
     print("Hello! I can help you with basic arithmetic calculations.")
     while True:
-        user_input = input("You: ")
+        user_input = input("You: ").strip().lower()
         numbers, operation = extract_numbers_and_operation(user_input, brain)
 
         if not numbers:
@@ -70,14 +70,23 @@ def ai_bot():
             clarification = input("You: ").strip().lower()
 
             # Check if the clarification matches known operations
-            if clarification in ["addition", "subtraction", "multiplication", "division"]:
+            known_operations = ["addition", "subtraction", "multiplication", "division"]
+            if clarification in known_operations:
                 operation = clarification
             else:
                 print(f"AI: I don't know what '{clarification}' means. Could you explain it?")
                 definition = input("You: ").strip().lower()
-                brain[clarification] = definition
-                save_brain(brain)
-                operation = definition
+
+                # Check if the definition is one of the known operations
+                if definition in known_operations:
+                    # Add the new term as a synonym for the known operation
+                    if clarification not in brain[definition]:
+                        brain[definition].append(clarification)
+                    save_brain(brain)
+                    operation = definition
+                else:
+                    print("AI: Sorry, I still don't understand that operation.")
+                    continue
 
         result = perform_calculation(numbers, operation)
 

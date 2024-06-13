@@ -1,13 +1,12 @@
 import re
 import json
-import os
 
 # Load or initialize the bot's brain
 def load_brain():
-    if os.path.exists("brain.json"):
+    try:
         with open("brain.json", "r") as file:
             return json.load(file)
-    else:
+    except FileNotFoundError:
         # Initial brain data
         initial_brain = {
             "add": "addition",
@@ -68,18 +67,17 @@ def ai_bot():
 
         if not operation:
             print("AI: I am confused, tell me which calculation you would like to perform (e.g., addition, subtraction, multiplication, division).")
-            clarification = input("You: ")
-            numbers, operation = extract_numbers_and_operation(user_input + " " + clarification, brain)
+            clarification = input("You: ").strip().lower()
 
-            if not operation:
-                operation = clarification.strip().lower()
-
-            if operation not in ["addition", "subtraction", "multiplication", "division"]:
-                print(f"AI: I don't know what '{operation}' means. Could you explain it?")
-                definition = input("You: ")
-                brain[operation] = definition.strip().lower()
+            # Check if the clarification matches known operations
+            if clarification in ["addition", "subtraction", "multiplication", "division"]:
+                operation = clarification
+            else:
+                print(f"AI: I don't know what '{clarification}' means. Could you explain it?")
+                definition = input("You: ").strip().lower()
+                brain[clarification] = definition
                 save_brain(brain)
-                operation = definition.strip().lower()
+                operation = definition
 
         result = perform_calculation(numbers, operation)
 

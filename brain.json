@@ -1,0 +1,10 @@
+{
+    "add": "addition",
+    "addition": "addition",
+    "subtract": "subtraction",
+    "subtraction": "subtraction",
+    "multiply": "multiplication",
+    "multiplication": "multiplication",
+    "divide": "division",
+    "division": "division"
+}
